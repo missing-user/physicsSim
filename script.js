@@ -6,24 +6,13 @@ var canvas = document.getElementById('canvas'),
 	lastLoopTime = 0,
 	dt = 1,
 	paused = false,
-	debugging = false
+	debugging = false,
+	timefactor = 1
 var particles = new SpatialHash(20),
 	statics = []
 
 function draw() {
 	ctx.clearRect(0, 0, width, height);
-	ctx.fillStyle = "#292929"
-	ctx.lineWidth = 1
-	for (p of particles.objects) {
-		ctx.fillStyle = p.collisionDepth > 0 ? "#292929" : "#9F9F9F"
-		if (debugging) ctx.fillText(~~(p.collisionDepth * 10), p.x, p.y)
-		if ('w' in p && 'h' in p) ctx.fillRect(p.x, p.y, p.w, p.h)
-		else if ('r' in p) {
-			ctx.beginPath()
-			ctx.arc(p.x, p.y, p.r, 0, 2 * Math.PI)
-			ctx.stroke()
-		} else ctx.fillRect(p.x, p.y, 2, 2)
-	}
 	ctx.strokeStyle = "#F00"
 	for (s of statics) {
 		ctx.beginPath()
@@ -31,12 +20,24 @@ function draw() {
 		ctx.stroke()
 	}
 	ctx.strokeStyle = "#292929"
+	ctx.fillStyle = "#292929"
+	ctx.lineWidth = 1
+	for (p of particles.objects) {
+		if (debugging) ctx.fillText(p.collisionNormal ? (p.collisionNormal.x + '; ' + p.collisionNormal.y) : 'none', p.x, p.y)
+		if ('w' in p && 'h' in p) ctx.fillRect(p.x, p.y, p.w, p.h)
+		else if ('r' in p) {
+			ctx.beginPath()
+			ctx.arc(p.x, p.y, p.r, 0, 2 * Math.PI)
+			ctx.stroke()
+		} else ctx.fillRect(p.x, p.y, 2, 2)
+	}
 	if (debugging) drawDebug()
 }
 
 function loop() {
 	draw()
 	dt = (performance.now() - lastLoopTime) / 1000
+	dt /= timefactor
 	if (dt > 0.1) {
 		console.log('frametimeSpike, limiting timestep', dt)
 		dt = 0.1
@@ -46,8 +47,8 @@ function loop() {
 		p.x = p.x + p.vx * dt
 		p.y = p.y + p.vy * dt
 		//physics
-		p.collisionDepth = 0
-		p.vy += 50 * dt //gravity
+		p.collisionNormal = null
+		p.vy += 10 * dt //gravity
 		getCollisions(p)
 		//repulsion(p)
 		//friction
@@ -70,9 +71,6 @@ function loop() {
 			if (p.y > height) p.vy = -Math.abs(p.vy)
 		}
 	}
-	for (s of statics) {
-		getFlippedCollisions(s)
-	}
 	particles.rebuild()
 	if (!paused) requestAnimationFrame(loop)
 }
@@ -81,69 +79,65 @@ function getCollisions(p) {
 	for (var c of particles.getCandidates(p)) {
 		if ('w' in p && 'h' in p) {
 			if ('w' in c && 'h' in c) {
-				p.collisionDepth += AABB_AABB_intersection(p, c)
+				p.collisionNormal = AABB_AABB_intersection(p, c)
 			} else if ('r' in c) {
-				p.collisionDepth = AABB_circle_intersection(p, c)
+				p.collisionNormal = AABB_circle_intersection(p, c, true)
 			} else {
-				p.collisionDepth = AABB_point_intersection(p, c)
+				p.collisionNormal = AABB_point_intersection(p, c)
 			}
 		} else if ('r' in p) {
 			if ('w' in c && 'h' in c) {
-				p.collisionDepth = AABB_circle_intersection(c, p)
+				p.collisionNormal = AABB_circle_intersection(c, p)
 			} else if ('r' in c) {
-				p.collisionDepth = circle_circle_intersection(p, c)
+				p.collisionNormal = circle_circle_intersection(p, c)
 			} else {
-				p.collisionDepth = circle_point_intersection(p, c)
+				p.collisionNormal = circle_point_intersection(p, c)
 			}
 		} else {
 			if ('w' in c && 'h' in c) {
-				p.collisionDepth = AABB_point_intersection(c, p)
+				p.collisionNormal = AABB_point_intersection(c, p, true)
 			} else if ('r' in c) {
-				p.collisionDepth = circle_point_intersection(c, p)
+				p.collisionNormal = circle_point_intersection(c, p, true)
 			}
 		}
-		if (p.collisionDepth) softCollision(p, c, p.collisionDepth)
-	}
-}
-
-function getFlippedCollisions(c) {
-	for (var p of particles.getCandidates(c)) {
-		if ('w' in p && 'h' in p) {
-			if ('w' in c && 'h' in c) {
-				p.collisionDepth += AABB_AABB_intersection(p, c)
-			} else if ('r' in c) {
-				p.collisionDepth = AABB_circle_intersection(p, c)
-			} else {
-				p.collisionDepth = AABB_point_intersection(p, c)
-			}
-		} else if ('r' in p) {
-			if ('w' in c && 'h' in c) {
-				p.collisionDepth = AABB_circle_intersection(c, p)
-			} else if ('r' in c) {
-				p.collisionDepth = circle_circle_intersection(p, c)
-			} else {
-				p.collisionDepth = circle_point_intersection(p, c)
-			}
-		} else {
-			if ('w' in c && 'h' in c) {
-				p.collisionDepth = AABB_point_intersection(c, p)
-			} else if ('r' in c) {
-				p.collisionDepth = circle_point_intersection(c, p)
-			}
+		if (debugging && p.collisionNormal) {
+			ctx.strokeStyle = (p.collisionNormal.x > 0) ? "#F00" : "#0020F6"
+			arrow(ctx, p.x, p.y, p.x + p.collisionNormal.x, p.y + p.collisionNormal.y)
+			ctx.strokeStyle = "#292929"
 		}
-		if (p.collisionDepth) softCollision(p, c, p.collisionDepth)
+		if (p.collisionNormal) softCollision(p, c, p.collisionNormal)
 	}
 }
 
 function circle_circle_intersection(a, b) {
-	r2 = (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)
-	if (r2 < (a.r + b.r) * (a.r + b.r)) return a.r + b.r - Math.sqrt(r2)
+	dx = a.x - b.x
+	dy = a.y - b.y
+	r2 = dx * dx + dy * dy
+	if (r2 < (a.r + b.r) * (a.r + b.r)) {
+		dist = Math.sqrt(r2)
+		return {
+			x: (a.r + b.r - dist) * dx / dist,
+			y: (a.r + b.r - dist) * dy / dist
+		}
+	}
 	return null
 }
 
-function circle_point_intersection(a, b) {
-	r2 = (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)
-	if (r2 < a.r * a.r) return a.r - Math.sqrt(r2)
+function circle_point_intersection(a, b, flipDirection = false) {
+	dx = a.x - b.x
+	dy = a.y - b.y
+	if (flipDirection) {
+		dx = -dx
+		dy = -dy
+	}
+	r2 = dx * dx + dy * dy
+	if (r2 < a.r * a.r) {
+		dist = Math.sqrt(r2)
+		return {
+			x: (a.r - dist) * dx / dist,
+			y: (a.r - dist) * dy / dist
+		}
+	}
 	return null
 }
 
@@ -153,19 +147,48 @@ function AABB_AABB_intersection(a, b) {
 	if (b.x - a.x > a.w) return null
 	if (b.y - a.y > a.h) return null
 	// We have an overlap
-	return b.x - a.x + b.y - a.y;
+	// NOTE: differentiates between the four cases (nw, ne, sw, se)
+	xr = (b.x - a.x < (a.w - b.w) / 2) ? b.w + b.x - a.x : -a.x + b.x - a.w
+	yr = (b.y - a.y < (a.h - b.h) / 2) ? b.h + b.y - a.y : -a.y + b.y - a.h
+	// NOTE: only push out of the minimal axis, prevents tiny overlaps on
+	//x creating huge forces in the y direction
+	if (Math.abs(yr) > Math.abs(xr)) return {
+		x: xr,
+		y: 0
+	}
+	else return {
+		x: 0,
+		y: yr
+	}
 }
 
-function AABB_point_intersection(a, p) {
-	if (p.x - a.x > a.w) return false
-	if (p.y - a.y > a.h) return false
-	if (p.x < a.x) return false
-	if (p.y < a.y) return false
+function AABB_point_intersection(a, p, flipDirection = false) {
+	if (p.x - a.x > a.w) return null
+	if (p.y - a.y > a.h) return null
+	if (p.x < a.x) return null
+	if (p.y < a.y) return null
 	// We have an overlap
-	return true;
+	// NOTE: differentiates between the four cases (nw, ne, sw, se)
+	xr = (p.x - a.x < a.w / 2) ? a.x - p.x : a.x + a.w - p.x
+	yr = (p.y - a.y < a.h / 2) ? a.y - p.y : a.y + a.h - p.y
+	return {
+		x: flipDirection ? xr : -xr,
+		y: flipDirection ? yr : -yr
+	}
 }
 
-function AABB_circle_intersection(b, c) {
+function AABB_circle_intersection(b, c, flipDirection = false) {
+	//check if circle center is inside
+	centerCheck = AABB_point_intersection(b, c, true)
+	if (centerCheck) {
+		centerCheck.x += c.r * Math.sign(centerCheck.x)
+		centerCheck.y += c.r * Math.sign(centerCheck.y)
+		if (flipDirection) {
+			centerCheck.x = -centerCheck.x
+			centerCheck.y = -centerCheck.y
+		}
+		return centerCheck
+	}
 	//clamp the coordinates to find the closest point on the box
 	closestx = b.x
 	closesty = b.y
@@ -176,7 +199,7 @@ function AABB_circle_intersection(b, c) {
 	return circle_point_intersection(c, {
 		x: closestx,
 		y: closesty
-	})
+	}, flipDirection)
 }
 
 function hardCollision(a, b) {
@@ -200,20 +223,11 @@ function hardCollision(a, b) {
 	return true
 }
 
-function softCollision(a, b, depth) {
-	ctx.beginPath()
-	r2 = (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)
-	xVec = (a.x - b.x) / Math.sqrt(r2)
-	yVec = (a.y - b.y) / Math.sqrt(r2)
+function softCollision(a, b, normal) {
 	//spring force euqation
 	k = 1 / (1 / a.k + 1 / b.k)
-	force = k * depth
-	ctx.lineWidth = force / k / 5
-	a.vx += xVec * dt * force / a.m
-	a.vy += yVec * dt * force / a.m
-	ctx.moveTo(a.x, a.y)
-	if (debugging) ctx.lineTo(b.x, b.y)
-	ctx.stroke()
+	a.vx += normal.x * dt * k / a.m
+	a.vy += normal.y * dt * k / a.m
 }
 
 function friction(p) {
@@ -224,65 +238,74 @@ function friction(p) {
 	} else {
 		v2 = p.vx * p.vx + p.vy * p.vy
 		if (v2 > 0) {
-			p.vx -= 0.1 * p.vx / Math.sqrt(v2) * dt * v2 / p.m
-			p.vy -= 0.1 * p.vy / Math.sqrt(v2) * dt * v2 / p.m
+			p.vx -= 0.002 * p.A * p.vx / Math.sqrt(v2) * dt * v2 / p.m
+			p.vy -= 0.002 * p.A * p.vy / Math.sqrt(v2) * dt * v2 / p.m
 		}
 	}
 }
 
 function initialize() {
+	for (var i = 0; i < 50; i++) {
+		gen = {
+			x: 600 * Math.random(),
+			y: 600 * Math.random(),
+			w: 20 + 20 * Math.random(),
+			h: 20 + 20 * Math.random(),
+			vx: Math.random() * 50 - 25,
+			vy: Math.random() * 50 - 25,
+			k: 80000,
+			get m() {
+				return this.w * this.h;
+			},
+			get A() {
+				return this.w + this.h
+			}
+		}
+		particles.add(gen)
+	}
+	for (var i = 0; i < 50; i++) {
+		gen = {
+			x: 600 * Math.random(),
+			y: 600 * Math.random(),
+			r: 5 + 20 * Math.random(),
+			k: 80000,
+			vx: Math.random() * 50 - 25,
+			vy: Math.random() * 50 - 25,
+			get m() {
+				return this.r * this.r * Math.PI;
+			},
+			get A() {
+				return this.r * 2
+			}
+		}
+		particles.add(gen)
+	}
 	for (var i = 0; i < 0; i++) {
 		gen = {
 			x: 600 * Math.random(),
 			y: 600 * Math.random(),
-			w: 30 * Math.random(),
-			h: 30 * Math.random(),
-			vx: Math.random() * 50 - 25,
-			vy: Math.random() * 50 - 25,
-			get m() {
-				return 100
-				return this.w * this.h;
-			}
-		}
-		particles.add(gen)
-	}
-	for (var i = 0; i < 250; i++) {
-		gen = {
-			x: 600 * Math.random(),
-			y: 600 * Math.random(),
-			r: 5 + 15 * Math.random(),
-			k: 50000,
-			vx: Math.random() * 50 - 25,
-			vy: Math.random() * 50 - 25,
-			get m() {
-				return 100
-				return this.r * this.r * Math.PI;
-			}
-		}
-		particles.add(gen)
-	}
-	for (var i = 0; i < 10; i++) {
-		gen = {
-			x: 600 * Math.random(),
-			y: 600 * Math.random(),
-			r: 25 + 25 * Math.random(),
-			k: -2000,
+			r: 5 + 35 * Math.random(),
+			k: -50000,
 			vx: 0,
 			vy: 0,
 			get m() {
-				return 100
-				return this.r * this.r * Math.PI;
+				return this.r * this.r * Math.PI
+			},
+			get A() {
+				return this.r * 2
 			}
 		}
 		statics.push(gen)
 	}
-	for (var i = 0; i < 0; i++) {
+	for (var i = 0; i < 100; i++) {
 		gen = {
 			x: 600 * Math.random(),
 			y: 600 * Math.random(),
 			vx: Math.random() * 50 - 25,
 			vy: Math.random() * 50 - 25,
-			m: 100
+			m: 10,
+			k: 100,
+			A: 1,
 		}
 		particles.add(gen)
 	}
