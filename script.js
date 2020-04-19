@@ -5,8 +5,9 @@ var canvas = document.getElementById('canvas'),
 	fps = 0,
 	lastLoopTime = 0,
 	dt = 1,
-	paused = false
-var particles = new SpatialHash(15),
+	paused = false,
+	debugging = false
+var particles = new SpatialHash(20),
 	statics = []
 
 function draw() {
@@ -15,7 +16,7 @@ function draw() {
 	ctx.lineWidth = 1
 	for (p of particles.objects) {
 		ctx.fillStyle = p.collisionDepth > 0 ? "#292929" : "#9F9F9F"
-		ctx.fillText(~~(p.collisionDepth * 10), p.x, p.y)
+		if (debugging) ctx.fillText(~~(p.collisionDepth * 10), p.x, p.y)
 		if ('w' in p && 'h' in p) ctx.fillRect(p.x, p.y, p.w, p.h)
 		else if ('r' in p) {
 			ctx.beginPath()
@@ -30,7 +31,7 @@ function draw() {
 		ctx.stroke()
 	}
 	ctx.strokeStyle = "#292929"
-	drawDebug()
+	if (debugging) drawDebug()
 }
 
 function loop() {
@@ -46,7 +47,7 @@ function loop() {
 		p.y = p.y + p.vy * dt
 		//physics
 		p.collisionDepth = 0
-		p.vy += 10 * dt //gravity
+		p.vy += 50 * dt //gravity
 		getCollisions(p)
 		//repulsion(p)
 		//friction
@@ -70,38 +71,43 @@ function loop() {
 		}
 	}
 	for (s of statics) {
-		getCollisions(s)
+		getFlippedCollisions(s)
 	}
 	particles.rebuild()
 	if (!paused) requestAnimationFrame(loop)
 }
 
-function repulsion(target) {
-	ctx.beginPath()
-	for (var c of particles.getCandidates(target)) {
-		r2 = (target.x - c.x) * (target.x - c.x) + (target.y - c.y) * (target.y - c.y)
-		if ('r' in c)
-			if (r2 < (target.r + c.r) * (target.r + c.r)) {
-				xVec = (target.x - c.x) / Math.sqrt(r2)
-				yVec = (target.y - c.y) / Math.sqrt(r2)
-				//spring force euqation
-				k = 10
-				force = k * (target.r + c.r - Math.sqrt(r2))
-				ctx.lineWidth = force / k / 5
-				target.vx += xVec * dt * force / target.m
-				target.vy += yVec * dt * force / target.m
-				//ctx.moveTo(target.x, target.y)
-				//ctx.lineTo(c.x, c.y)
-			}
-		if ('w' in c && 'h' in c) {
-			console.log('rectangle collision missing');
-		}
-	}
-	ctx.stroke()
-}
-
 function getCollisions(p) {
 	for (var c of particles.getCandidates(p)) {
+		if ('w' in p && 'h' in p) {
+			if ('w' in c && 'h' in c) {
+				p.collisionDepth += AABB_AABB_intersection(p, c)
+			} else if ('r' in c) {
+				p.collisionDepth = AABB_circle_intersection(p, c)
+			} else {
+				p.collisionDepth = AABB_point_intersection(p, c)
+			}
+		} else if ('r' in p) {
+			if ('w' in c && 'h' in c) {
+				p.collisionDepth = AABB_circle_intersection(c, p)
+			} else if ('r' in c) {
+				p.collisionDepth = circle_circle_intersection(p, c)
+			} else {
+				p.collisionDepth = circle_point_intersection(p, c)
+			}
+		} else {
+			if ('w' in c && 'h' in c) {
+				p.collisionDepth = AABB_point_intersection(c, p)
+			} else if ('r' in c) {
+				p.collisionDepth = circle_point_intersection(c, p)
+			}
+		}
+		if (p.collisionDepth) softCollision(p, c, p.collisionDepth)
+	}
+}
+
+function getFlippedCollisions(c) {
+	for (var p of particles.getCandidates(c)) {
 		if ('w' in p && 'h' in p) {
 			if ('w' in c && 'h' in c) {
 				p.collisionDepth += AABB_AABB_intersection(p, c)
@@ -206,7 +212,7 @@ function softCollision(a, b, depth) {
 	a.vx += xVec * dt * force / a.m
 	a.vy += yVec * dt * force / a.m
 	ctx.moveTo(a.x, a.y)
-	ctx.lineTo(b.x, b.y)
+	if (debugging) ctx.lineTo(b.x, b.y)
 	ctx.stroke()
 }
 
@@ -240,12 +246,12 @@ function initialize() {
 		}
 		particles.add(gen)
 	}
-	for (var i = 0; i < 200; i++) {
+	for (var i = 0; i < 250; i++) {
 		gen = {
 			x: 600 * Math.random(),
 			y: 600 * Math.random(),
-			r: 5 + 5 * Math.random(),
-			k: 100000,
+			r: 5 + 15 * Math.random(),
+			k: 50000,
 			vx: Math.random() * 50 - 25,
 			vy: Math.random() * 50 - 25,
 			get m() {
@@ -255,12 +261,12 @@ function initialize() {
 		}
 		particles.add(gen)
 	}
-	for (var i = 0; i < 15; i++) {
+	for (var i = 0; i < 10; i++) {
 		gen = {
 			x: 600 * Math.random(),
 			y: 600 * Math.random(),
-			r: 55 + 25 * Math.random(),
-			k: -10000,
+			r: 25 + 25 * Math.random(),
+			k: -2000,
 			vx: 0,
 			vy: 0,
 			get m() {
