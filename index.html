@@ -7,11 +7,14 @@
   </head>
   <body>
     <canvas id="canvas" width="800" height="800"></canvas>
+    <label for="debugChk">debug</label>
+    <input id="debugChk" type="checkbox" name="debug" onchange="debugging = this.checked; if(localStorage)localStorage.setItem('debug', this.checked)">
+    <input type="range" min="0.2" max="10" value="1" class="slider" onchange="timefactor = this.value">
+
     <script type="text/javascript" src="debug.js"></script>
     <script type="text/javascript" src="spatialHash.js"></script>
-    <script type="text/javascript" src="script.js"></script>
-    <label for="debugChk">debug</label>
-    <input id="debugChk" type="checkbox" name="debug" onchange="debugging=this.checked">
-    <input type="range" min="0.2" max="10" value="1" class="slider" onchange="timefactor = this.value">
+    <script type="text/javascript" src="script.js" onload="if(localStorage){
+       debugging = localStorage.getItem('debug')=== 'true';
+       document.getElementById('debugChk').checked = localStorage.getItem('debug') === 'true'}"></script>
   </body>
 </html>

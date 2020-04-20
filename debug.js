@@ -9,7 +9,7 @@ function drawFPS() {
 }
 
 function drawGrid() {
-	ctx.beginPath();
+	ctx.beginPath()
 	ctx.lineWidth = 0.5
 	ctx.strokeStyle = '#000'
 	for (var i = 0; i < ~~(width / particles.cellSize); i++) {
@@ -21,11 +21,21 @@ function drawGrid() {
 		ctx.lineTo(width, j * particles.cellSize)
 	}
 	ctx.stroke();
-	ctx.fillStyle = "rgba(101,230,56,.25)"
 	for (h in particles.cells) {
 		coords = h.split(';')
+		ctx.fillStyle = intToRgb(particles.cells[h].length)
 		ctx.fillRect(coords[0], coords[1], particles.cellSize, particles.cellSize)
 	}
+}
+
+function intToRgb(num, max = 5) {
+	num = clamp(num, 0, max)
+	ratio = num / max * 255
+	return ['rgba(', ratio, ',', 255 - ratio, ',0,.20)'].join('')
+}
+
+function clamp(num, min, max) {
+	return num <= min ? min : num >= max ? max : num;
 }
 
 function arrow(context, fromx, fromy, tox, toy) {

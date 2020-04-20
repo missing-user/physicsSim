@@ -23,7 +23,6 @@ function draw() {
 	ctx.fillStyle = "#292929"
 	ctx.lineWidth = 1
 	for (p of particles.objects) {
-		if (debugging) ctx.fillText(p.collisionNormal ? (p.collisionNormal.x + '; ' + p.collisionNormal.y) : 'none', p.x, p.y)
 		if ('w' in p && 'h' in p) ctx.fillRect(p.x, p.y, p.w, p.h)
 		else if ('r' in p) {
 			ctx.beginPath()
@@ -101,8 +100,8 @@ function getCollisions(p) {
 			}
 		}
 		if (debugging && p.collisionNormal) {
-			ctx.strokeStyle = (p.collisionNormal.x > 0) ? "#F00" : "#0020F6"
-			arrow(ctx, p.x, p.y, p.x + p.collisionNormal.x, p.y + p.collisionNormal.y)
+			ctx.strokeStyle = (p.collisionNormal.x > 0 || (p.collisionNormal.x == 0 && p.collisionNormal.y > 0)) ? "#F00" : "#0020F6"
+			arrow(ctx, p.x, p.y, p.x + p.collisionNormal.x * 2, p.y + p.collisionNormal.y * 2)
 			ctx.strokeStyle = "#292929"
 		}
 		if (p.collisionNormal) softCollision(p, c, p.collisionNormal)
@@ -297,7 +296,7 @@ function initialize() {
 		}
 		statics.push(gen)
 	}
-	for (var i = 0; i < 100; i++) {
+	for (var i = 0; i < 200; i++) {
 		gen = {
 			x: 600 * Math.random(),
 			y: 600 * Math.random(),
