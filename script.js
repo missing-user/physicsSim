@@ -7,9 +7,16 @@ var canvas = document.getElementById('canvas'),
 	dt = 1,
 	paused = false,
 	debugging = false,
-	timefactor = 1
+	timefactor = 1,
+	maincolor = '#333',
+	gravity = 15
 var particles = new SpatialHash(20),
 	statics = []
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+	maincolor = e.matches ? '#d3d7cf' : '#333';
+});
+if (window.matchMedia)
+	if (window.matchMedia('(prefers-color-scheme: dark)')) maincolor = '#d3d7cf'
 
 function draw() {
 	ctx.clearRect(0, 0, width, height);
@@ -19,8 +26,8 @@ function draw() {
 		ctx.arc(s.x, s.y, s.r, 0, 2 * Math.PI)
 		ctx.stroke()
 	}
-	ctx.strokeStyle = "#292929"
-	ctx.fillStyle = "#292929"
+	ctx.strokeStyle = maincolor
+	ctx.fillStyle = maincolor
 	ctx.lineWidth = 1
 	for (p of particles.objects) {
 		if ('w' in p && 'h' in p) ctx.fillRect(p.x, p.y, p.w, p.h)
@@ -47,7 +54,7 @@ function loop() {
 		p.y = p.y + p.vy * dt
 		//physics
 		p.collisionNormal = null
-		p.vy += 10 * dt //gravity
+		p.vy += gravity * dt //gravity
 		getCollisions(p)
 		//repulsion(p)
 		//friction
@@ -102,7 +109,7 @@ function getCollisions(p) {
 		if (debugging && p.collisionNormal) {
 			ctx.strokeStyle = (p.collisionNormal.x > 0 || (p.collisionNormal.x == 0 && p.collisionNormal.y > 0)) ? "#F00" : "#0020F6"
 			arrow(ctx, p.x, p.y, p.x + p.collisionNormal.x * 2, p.y + p.collisionNormal.y * 2)
-			ctx.strokeStyle = "#292929"
+			ctx.strokeStyle = maincolor
 		}
 		if (p.collisionNormal) softCollision(p, c, p.collisionNormal)
 	}
@@ -246,8 +253,8 @@ function friction(p) {
 function initialize() {
 	for (var i = 0; i < 50; i++) {
 		gen = {
-			x: 600 * Math.random(),
-			y: 600 * Math.random(),
+			x: canvas.width * Math.random(),
+			y: canvas.height * Math.random(),
 			w: 20 + 20 * Math.random(),
 			h: 20 + 20 * Math.random(),
 			vx: Math.random() * 50 - 25,
@@ -264,8 +271,8 @@ function initialize() {
 	}
 	for (var i = 0; i < 50; i++) {
 		gen = {
-			x: 600 * Math.random(),
-			y: 600 * Math.random(),
+			x: canvas.width * Math.random(),
+			y: canvas.height * Math.random(),
 			r: 5 + 20 * Math.random(),
 			k: 80000,
 			vx: Math.random() * 50 - 25,
@@ -281,8 +288,8 @@ function initialize() {
 	}
 	for (var i = 0; i < 0; i++) {
 		gen = {
-			x: 600 * Math.random(),
-			y: 600 * Math.random(),
+			x: canvas.width * Math.random(),
+			y: canvas.height * Math.random(),
 			r: 5 + 35 * Math.random(),
 			k: -50000,
 			vx: 0,
@@ -298,8 +305,8 @@ function initialize() {
 	}
 	for (var i = 0; i < 200; i++) {
 		gen = {
-			x: 600 * Math.random(),
-			y: 600 * Math.random(),
+			x: canvas.width * Math.random(),
+			y: canvas.height * Math.random(),
 			vx: Math.random() * 50 - 25,
 			vy: Math.random() * 50 - 25,
 			m: 10,

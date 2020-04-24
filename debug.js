@@ -9,9 +9,9 @@ function drawFPS() {
 }
 
 function drawGrid() {
-	ctx.beginPath()
 	ctx.lineWidth = 0.5
-	ctx.strokeStyle = '#000'
+	ctx.strokeStyle = maincolor
+	ctx.beginPath()
 	for (var i = 0; i < ~~(width / particles.cellSize); i++) {
 		ctx.moveTo(i * particles.cellSize, 0)
 		ctx.lineTo(i * particles.cellSize, height)

@@ -20,10 +20,15 @@
           <canvas id="canvas" width="800" height="800"></canvas>
         </div>
       </div>
+      <hr>
       <div class="row">
         <div class="one-half column">
           <label for="timewarp">slow down time</label>
           <input id="timewarp" type="range" min="0.2" max="10" value="1" class="slider" onchange="timefactor = this.value">
+
+          <label for="timewarp">gravity</label>
+          <input id="timewarp" type="range" min="-100" max="100" value="15" class="slider" onchange="gravity = this.value">
+
         </div>
         <div class="one-half column">
           <button type="button" name="debug button" onclick="debugging = !debugging; if(localStorage)localStorage.setItem('debug', debugging)">toggle debug</button>
