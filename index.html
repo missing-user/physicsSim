@@ -3,18 +3,35 @@
   <head>
     <meta charset="utf-8">
     <title>basic repulsion physics</title>
-    <link rel="stylesheet" href="master.css">
+    <!-- MOBILE––––––––––––––––––––––– -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- CSS––––––––––––––––––––––– -->
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/skeleton.css">
+    <link rel="stylesheet" href="css/darkskelleton.css" media="(prefers-color-scheme: dark)">
+    <link rel="stylesheet" href="css/style.css">
   </head>
   <body>
-    <canvas id="canvas" width="800" height="800"></canvas>
-    <label for="debugChk">debug</label>
-    <input id="debugChk" type="checkbox" name="debug" onchange="debugging = this.checked; if(localStorage)localStorage.setItem('debug', this.checked)">
-    <input type="range" min="0.2" max="10" value="1" class="slider" onchange="timefactor = this.value">
-
+    <div class="container">
+      <div class="row" style="margin-top:3rem;">
+        <div class="column">
+          <h1>BOUNCY PHYSICS!!!</h1>
+          <canvas id="canvas" width="800" height="800"></canvas>
+        </div>
+      </div>
+      <div class="row">
+        <div class="one-half column">
+          <label for="timewarp">slow down time</label>
+          <input id="timewarp" type="range" min="0.2" max="10" value="1" class="slider" onchange="timefactor = this.value">
+        </div>
+        <div class="one-half column">
+          <button type="button" name="debug button" onclick="debugging = !debugging; if(localStorage)localStorage.setItem('debug', debugging)">toggle debug</button>
+        </div>
+      </div>
+    </div>
     <script type="text/javascript" src="debug.js"></script>
     <script type="text/javascript" src="spatialHash.js"></script>
-    <script type="text/javascript" src="script.js" onload="if(localStorage){
-       debugging = localStorage.getItem('debug')=== 'true';
-       document.getElementById('debugChk').checked = localStorage.getItem('debug') === 'true'}"></script>
+    <script type="text/javascript" src="script.js" onload="if(localStorage){debugging = localStorage.getItem('debug')=== 'true';"></script>
   </body>
 </html>
