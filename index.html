@@ -17,23 +17,32 @@
       <div class="row" style="margin-top:3rem;">
         <div class="column">
           <h1>BOUNCY PHYSICS!!!</h1>
-          <canvas id="canvas" width="800" height="800"></canvas>
+          <canvas class="u-full-width" id="canvas" width="800" height="800"></canvas>
         </div>
       </div>
       <hr>
       <div class="row">
         <div class="one-half column">
-          <label for="timewarp">slow down time</label>
           <input id="timewarp" type="range" min="0.2" max="10" value="1" class="slider" onchange="timefactor = this.value">
 
-          <label for="timewarp">gravity</label>
-          <input id="timewarp" type="range" min="-100" max="100" value="15" class="slider" onchange="gravity = this.value">
-
+          <label for="timewarp">slow down time</label>
         </div>
         <div class="one-half column">
           <button type="button" name="debug button" onclick="debugging = !debugging; if(localStorage)localStorage.setItem('debug', debugging)">toggle debug</button>
         </div>
       </div>
+
+      <div class="row">
+        <div class="one-half column">
+          <input id="timewarp" type="range" min="-100" max="100" value="15" class="slider" onchange="gravity = this.value">
+          <label for="timewarp">gravity</label>
+        </div>
+        <div class="one-half column">
+          <input id="springstrength" type="range" min="1" max="100" value="10" class="slider" onchange="springstrength = this.value">
+          <label for="springstrength">spring strength</label>
+        </div>
+      </div>
+
     </div>
     <script type="text/javascript" src="debug.js"></script>
     <script type="text/javascript" src="spatialHash.js"></script>

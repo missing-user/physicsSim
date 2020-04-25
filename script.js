@@ -9,14 +9,10 @@ var canvas = document.getElementById('canvas'),
 	debugging = false,
 	timefactor = 1,
 	maincolor = '#333',
-	gravity = 15
+	gravity = 15,
+	springstrength = 10;
 var particles = new SpatialHash(20),
 	statics = []
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-	maincolor = e.matches ? '#d3d7cf' : '#333';
-});
-if (window.matchMedia)
-	if (window.matchMedia('(prefers-color-scheme: dark)')) maincolor = '#d3d7cf'
 
 function draw() {
 	ctx.clearRect(0, 0, width, height);
@@ -231,7 +227,7 @@ function hardCollision(a, b) {
 
 function softCollision(a, b, normal) {
 	//spring force euqation
-	k = 1 / (1 / a.k + 1 / b.k)
+	k = springstrength / (1 / a.k + 1 / b.k)
 	a.vx += normal.x * dt * k / a.m
 	a.vy += normal.y * dt * k / a.m
 }
@@ -251,6 +247,15 @@ function friction(p) {
 }
 
 function initialize() {
+	//set the colorscheme
+	if (window.matchMedia) {
+		window.matchMedia('(prefers-color-scheme: dark)').addListener(e => {
+			maincolor = e.matches ? '#d3d7cf' : '#333';
+			console.log('theme change detected, setting color to', maincolor);
+		});
+		if (window.matchMedia('(prefers-color-scheme: dark)').matches) maincolor = '#d3d7cf'
+	}
+	//add the elements
 	for (var i = 0; i < 50; i++) {
 		gen = {
 			x: canvas.width * Math.random(),
@@ -259,7 +264,7 @@ function initialize() {
 			h: 20 + 20 * Math.random(),
 			vx: Math.random() * 50 - 25,
 			vy: Math.random() * 50 - 25,
-			k: 80000,
+			k: 8000,
 			get m() {
 				return this.w * this.h;
 			},
@@ -274,7 +279,7 @@ function initialize() {
 			x: canvas.width * Math.random(),
 			y: canvas.height * Math.random(),
 			r: 5 + 20 * Math.random(),
-			k: 80000,
+			k: 8000,
 			vx: Math.random() * 50 - 25,
 			vy: Math.random() * 50 - 25,
 			get m() {
@@ -291,7 +296,7 @@ function initialize() {
 			x: canvas.width * Math.random(),
 			y: canvas.height * Math.random(),
 			r: 5 + 35 * Math.random(),
-			k: -50000,
+			k: -5000,
 			vx: 0,
 			vy: 0,
 			get m() {
