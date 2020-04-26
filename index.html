@@ -23,29 +23,35 @@
       <hr>
       <div class="row">
         <div class="one-half column">
-          <input id="timewarp" type="range" min="0.2" max="10" value="1" class="slider" onchange="timefactor = this.value">
-
-          <label for="timewarp">slow down time</label>
+          <button type="button" id="linearFrictionBtn" name="friction button" onclick="resistanceToggle()">linear friction</button>
         </div>
         <div class="one-half column">
-          <button type="button" name="debug button" onclick="debugging = !debugging; if(localStorage)localStorage.setItem('debug', debugging)">toggle debug</button>
+          <button type="button" id="debugBtn" name="debug button" onclick="debug()">debug on</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="one-half column">
+          <input id="timewarp" type="range" min="0.2" max="10" value="1" class="slider" oninput="timefactor = this.value; document.getElementById('timewarpo').textContent=this.value">
+          <label for="timewarp">slow down time</label>
+          <output id="timewarpo" class="u-pull-right" name="result">1</output class="u-pull-right">
+        </div>
+        <div class="one-half column">
+          <input id="springstrength" type="range" min="1" max="100" value="10" class="slider" oninput="springstrength = this.value; document.getElementById('springstrengtho').textContent=this.value">
+          <label for="springstrength">spring strength</label>
+          <output id="springstrengtho" class="u-pull-right" name="result">10</output class="u-pull-right">
         </div>
       </div>
 
       <div class="row">
         <div class="one-half column">
-          <input id="timewarp" type="range" min="-100" max="100" value="15" class="slider" onchange="gravity = this.value">
-          <label for="timewarp">gravity</label>
-        </div>
-        <div class="one-half column">
-          <input id="springstrength" type="range" min="1" max="100" value="10" class="slider" onchange="springstrength = this.value">
-          <label for="springstrength">spring strength</label>
+          <input id="gravity" type="range" min="-100" max="100" value="15" class="slider" oninput="gravity = this.value; document.getElementById('gravityo').textContent=this.value">
+          <label for="gravity">gravity</label>
+          <output id="gravityo" class="u-pull-right" name="result">15</output class="u-pull-right">
         </div>
       </div>
-
     </div>
     <script type="text/javascript" src="debug.js"></script>
     <script type="text/javascript" src="spatialHash.js"></script>
-    <script type="text/javascript" src="script.js" onload="if(localStorage){debugging = localStorage.getItem('debug')=== 'true';}"></script>
+    <script type="text/javascript" src="script.js" onload="loadStorageValues()"></script>
   </body>
 </html>
