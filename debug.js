@@ -1,5 +1,11 @@
 function drawDebug() {
 	drawFPS();
+	let ee = 0;
+	for (h of particles.objects) {
+		ee += h.vx * h.vx + h.vy * h.vy * h.m * 0.5;
+	}
+	ctx.fillText(ee.toExponential() + "\t\t energy", 10, 56);
+
 	drawGrid();
 }
 

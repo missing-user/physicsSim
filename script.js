@@ -62,8 +62,6 @@ function loop() {
 	}
 	lastLoopTime = performance.now();
 	for (p of particles.objects) {
-		p.x = p.x + p.vx * dt;
-		p.y = p.y + p.vy * dt;
 		//physics
 		p.collisionNormal = null;
 		p.vy += gravity * dt; //gravity
@@ -91,6 +89,11 @@ function loop() {
 	for (s of statics) {
 		getCollisions(s);
 	}
+	for (p of particles.objects) {
+		p.x = p.x + p.vx * dt;
+		p.y = p.y + p.vy * dt;
+	}
+
 	particles.rebuild();
 	if (!paused) requestAnimationFrame(loop);
 }
