@@ -282,7 +282,7 @@ function friction(p) {
 function initialize() {
 	//set the colorscheme
 	if (window.matchMedia) {
-		window.matchMedia("(prefers-color-scheme: dark)").addEventListener(e => {
+		window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", e => {
 			maincolor = e.matches ? "#d3d7cf" : "#333";
 			console.log("theme change detected, setting color to", maincolor);
 		});
