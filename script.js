@@ -38,7 +38,7 @@ function draw() {
 }
 canvas.addEventListener(
 	"mousemove",
-	function(event) {
+	function (event) {
 		let rect = canvas.getBoundingClientRect();
 		let x = event.clientX - rect.left;
 		x *= canvas.width / rect.width;
@@ -126,7 +126,7 @@ function getCollisions(c) {
 		if (debugging && p.collisionNormal) {
 			ctx.strokeStyle =
 				p.collisionNormal.x > 0 ||
-				(p.collisionNormal.x == 0 && p.collisionNormal.y > 0)
+					(p.collisionNormal.x == 0 && p.collisionNormal.y > 0)
 					? "#F00"
 					: "#0020F6";
 			arrow(
@@ -282,7 +282,7 @@ function friction(p) {
 function initialize() {
 	//set the colorscheme
 	if (window.matchMedia) {
-		window.matchMedia("(prefers-color-scheme: dark)").addListener(e => {
+		window.matchMedia("(prefers-color-scheme: dark)").addEventListener(e => {
 			maincolor = e.matches ? "#d3d7cf" : "#333";
 			console.log("theme change detected, setting color to", maincolor);
 		});
