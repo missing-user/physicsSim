@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8">
-  <title>basic repulsion physics</title>
+  <title>Spatial Hashing Demo</title>
   <!-- MOBILE––––––––––––––––––––––– -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;600&display=swap" rel="stylesheet">
@@ -12,16 +12,21 @@
   <link rel="stylesheet" href="css/skeleton.css">
   <link rel="stylesheet" href="css/darkskelleton.css" media="(prefers-color-scheme: dark)">
   <link rel="stylesheet" href="css/style.css">
+  <meta name="description" content="A simple demo of the spatial hashing algorithm for physics simulations">
 </head>
 
 <body>
   <div class="container">
     <a href="/">Back to Home</a>
     <div class="row" style="margin-top:3rem;">
-      <div class="column">
-        <h1>BOUNCY PHYSICS!!!</h1>
+      <article class="column">
+        <h1>Spatial Hashing Demo</h1>
+        <p>
+          A demo of spatial hashing for physics simulations. In this example the algorithm is used to reduce the number of 
+          collision checks per frame, by dividing the world into a grid of cells, and then only checking for collisions between objects that are in the same cell. 
+</p>
         <canvas class="u-full-width" id="canvas" width="800" height="800"></canvas>
-      </div>
+      </article>
     </div>
     <hr>
     <div class="row">
@@ -35,10 +40,12 @@
     </div>
     <div class="row">
       <div class="one-half column">
-        <input id="timewarp" type="range" min="0.2" max="10" value="1" class="slider"
-          oninput="timefactor = this.value; document.getElementById('timewarpo').textContent=this.value">
-        <label for="timewarp">slow down time</label>
-        <output id="timewarpo" class="u-pull-right" name="result">1</output class="u-pull-right">
+        <input id="cellsize" type="range" min="20" max="100" value="25" class="slider"
+          oninput="document.getElementById('cellsizeo').textContent=this.value"
+          onchange="spatialHash.cellSize = this.value; 
+          spatialHash.rebuild();">
+        <label for="cellsize">cell size</label>
+        <output id="cellsizeo" class="u-pull-right" name="result">25</output class="u-pull-right">
       </div>
       <div class="one-half column">
         <input id="springstrength" type="range" min="1" max="100" value="10" class="slider"
@@ -56,6 +63,26 @@
         <output id="gravityo" class="u-pull-right" name="result">15</output class="u-pull-right">
       </div>
     </div>
+
+    <article class="row" style="margin-top:12rem;">
+      <h2>Implementation Details</h2>
+      <p>
+        The objects are assigned to the cells by rounding their positions to the next multiple of the cell size on x and y axis.
+        These are then used as keys in a hash table, which is a dictionary with the rounded positions as keys.
+        <br>
+        <br>
+
+        A sensible cell size is crucial for this problem. Too small of a cell size means large objects can overlap several cells and actually decrease performance worse, because their collision is checked against objects in each cell they occupy.
+        On the other hand, a large cell size means that objects that lots of objects may occupy the same cell, leading to a O(n<sup>2</sup>) collision check within that cell.
+        <br>
+        <br>
+
+        The specific hashing algorithm for creating the hash key from x and y is called a <a href="https://en.wikipedia.org/wiki/Pairing_function">pairing function</a>, 
+        specifically Szudzik's pairing function.
+        <code>a >= b ? a * a + a + b : a + b * b;</code>  where a, b >= 0 (positive coordinates)
+
+      </p>
+    </article>
   </div>
   <script type="text/javascript" src="debug.js"></script>
   <script type="text/javascript" src="spatialHash.js"></script>
