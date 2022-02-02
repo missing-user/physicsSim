@@ -7,8 +7,7 @@ var canvas = document.getElementById("canvas"),
   dt = 1,
   paused = false,
   debugging = 0,
-  linearFriction = false,
-  resistance = 10,
+  resistance = 5,
   timefactor = 1,
   maincolor = "#333",
   gravity = 15,
@@ -16,6 +15,14 @@ var canvas = document.getElementById("canvas"),
   colCount = 0,
   mouse = { x: 0, y: 0 };
 var spatialHash = new SpatialHash(25);
+
+function random(min, max) {
+  if (max == null) {
+    max = min;
+    min = 0;
+  }
+  return Math.random() * (max - min) + min;
+}
 
 function draw() {
   ctx.clearRect(0, 0, width, height);
@@ -55,26 +62,15 @@ function onmousemove(event) {
   mouse.y = y;
 }
 
-function leapfrogStep(p) {
-  // Update half step velocity
-  vhx[i] += ax[i] * dt;
-  vhy[i] += ay[i] * dt;
-
-  // Update velocity
-  vx[i] = vhx[i] + (ax[i] * dt) / 2;
-  vy[i] = vhy[i] + (ay[i] * dt) / 2;
-
-  // Update position
-  x[i] += vhx[i] * dt;
-  y[i] += vhy[i] * dt;
-}
-
 function eulerIntegrate(p) {
   p.vx = p.vx + p.ax * dt;
   p.vy = p.vy + p.ay * dt;
 
   p.x = p.x + p.vx * dt;
   p.y = p.y + p.vy * dt;
+
+  p.vx = Math.min(1e8, Math.max(-1e8, p.vx));
+  p.vy = Math.min(1e8, Math.max(-1e8, p.vy));
 
   // handle boundaries
   if (p.x - (p.r ?? 0) < 0) {
@@ -130,18 +126,13 @@ function loop() {
   //if NaN has been calculated somewhere, print warning and discard the object
   if (0 in spatialHash.cells) {
     let nanCounter = 0;
-    for (const entries of spatialHash.cells[0]) {
-      if (
-        isNaN(entries.x) ||
-        isNaN(entries.y) ||
-        isNaN(entries.vx) ||
-        isNaN(entries.vy)
-      ) {
-        nanCounter++;
-        entries.x = 0;
-        entries.y = 0;
-        entries.vx = 0;
-        entries.vy = 0;
+    for (const entry of spatialHash.cells[0]) {
+      for (const key in entry) {
+        if (isNaN(entry[key]) && key != "collisionNormal") {
+          nanCounter++;
+          if (key.charAt(0) == "v") entry[key] = random(-25, 25);
+          else entry[key] = random(width);
+        }
       }
     }
     if (nanCounter > 0)
@@ -320,16 +311,15 @@ function softCollision(a, b, normal) {
 }
 
 function friction(p) {
-  //air resistance or linear friction
-  if (linearFriction) {
-    p.ax -= (resistance * p.vx) / p.m;
-    p.ay -= (resistance * p.vy) / p.m;
-  } else {
-    v2 = p.vx * p.vx + p.vy * p.vy;
-    if (v2 > 0.002) {
-      p.ax -= (((0.002 * resistance * p.A * p.vx) / Math.sqrt(v2)) * v2) / p.m;
-      p.ay -= (((0.002 * resistance * p.A * p.vy) / Math.sqrt(v2)) * v2) / p.m;
-    }
+  //air resistance
+  let v2 = p.vx * p.vx + p.vy * p.vy;
+  if (v2 > 0.02) {
+    let force = -0.002 * resistance * v2 * p.A;
+
+    let normalized = [p.vx / Math.sqrt(v2), p.vy / Math.sqrt(v2)];
+
+    p.ax += (normalized[0] * force) / p.m;
+    p.ay += (normalized[1] * force) / p.m;
   }
 }
 
@@ -350,14 +340,14 @@ function initialize() {
 
   //add the elements
   //circles
-  for (var i = 0; i < 500; i++) {
+  for (var i = 0; i < 350; i++) {
     gen = {
-      x: canvas.width * Math.random(),
-      y: canvas.height * Math.random(),
-      r: 5 + 10 * Math.random(),
+      x: random(width),
+      y: random(height),
+      r: random(8, 20),
       k: 5,
-      vx: Math.random() * 50 - 25,
-      vy: Math.random() * 50 - 25,
+      vx: random(-25, 25),
+      vy: random(-25, 25),
       get m() {
         return (this.r * this.r * Math.PI) / 1e3;
       },
@@ -370,15 +360,15 @@ function initialize() {
   //rectangles
   for (var i = 0; i < 100; i++) {
     gen = {
-      x: canvas.width * Math.random(),
-      y: canvas.height * Math.random(),
-      w: 10 + 20 * Math.random(),
-      h: 10 + 20 * Math.random(),
-      vx: Math.random() * 50 - 25,
-      vy: Math.random() * 50 - 25,
+      x: random(width),
+      y: random(height),
+      w: random(15, 40),
+      h: random(15, 40),
+      vx: random(-25, 25),
+      vy: random(-25, 25),
       k: 18,
       get m() {
-        return (this.w * this.h) / 1e2;
+        return (this.w * this.h) / 5e2;
       },
       get A() {
         return (this.w * this.h) / 1e3;
@@ -387,12 +377,12 @@ function initialize() {
     spatialHash.add(gen);
   }
   //points
-  for (var i = 0; i < 200; i++) {
+  for (var i = 0; i < 250; i++) {
     gen = {
-      x: canvas.width * Math.random(),
-      y: canvas.height * Math.random(),
-      vx: Math.random() * 50 - 25,
-      vy: Math.random() * 50 - 25,
+      x: random(width),
+      y: random(height),
+      vx: random(-25, 25),
+      vy: random(-25, 25),
       m: 0.05,
       k: 1,
       A: 0.02,

@@ -6,6 +6,7 @@ function drawDebug() {
 
 function debug(loadFromStorage = false) {
   if (!loadFromStorage) debugging = (debugging + 1) % 3;
+  if (isNaN(debugging)) debugging = 0;
   if (localStorage) localStorage.setItem("debug", debugging);
 
   switch (debugging) {
@@ -22,18 +23,6 @@ function debug(loadFromStorage = false) {
   }
 }
 
-function resistanceToggle() {
-  linearFriction = !linearFriction;
-  if (localStorage) localStorage.setItem("linearFriction", linearFriction);
-  if (document.getElementById("linearFrictionBtn"))
-    document.getElementById("linearFrictionBtn").textContent = linearFriction
-      ? "air resistance"
-      : "linear friction";
-  console.log(
-    linearFriction ? "linear friction turned on" : "air resistance turned on"
-  );
-}
-
 function toggleOptimization() {
   if (spatialHash.cellSize < 800) {
     spatialHash.cellSize = 800;
@@ -46,9 +35,7 @@ function loadStorageValues() {
   if (localStorage) {
     //loads negative values and then toggles them
     debugging = parseInt(localStorage.getItem("debug"));
-    linearFriction = localStorage.getItem("linearFriction") === "false";
     debug(true);
-    resistanceToggle();
   }
 }
 
