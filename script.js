@@ -81,7 +81,7 @@ function eulerIntegrate(p) {
   if (p.y - (p.r ?? 0) < 0) {
     // north wall
     p.vy = Math.abs(p.vy);
-    p.y = Math.max(p.y, (p.h ?? 0) + (p.r ?? 0));
+    p.y = Math.max(p.y, p.r ?? 0);
   }
   if (p.x + (p.w ?? 0) + (p.r ?? 0) > width) {
     // east wall
