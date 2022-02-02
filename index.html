@@ -46,25 +46,33 @@
           spatialHash.rebuild();">
         <label for="cellsize">cell size</label>
         <output id="cellsizeo" class="u-pull-right" name="result">25</output class="u-pull-right">
-      </div>
-      <div class="one-half column">
+
         <input id="springstrength" type="range" min="1" max="100" value="10" class="slider"
           oninput="springstrength = parseInt(this.value); document.getElementById('springstrengtho').textContent=this.value">
         <label for="springstrength">spring strength</label>
         <output id="springstrengtho" class="u-pull-right" name="result">10</output class="u-pull-right">
       </div>
-    </div>
-
-    <div class="row">
+      
       <div class="one-half column">
         <input id="gravity" type="range" min="-100" max="100" value="15" class="slider"
           oninput="gravity = parseInt(this.value); document.getElementById('gravityo').textContent=this.value">
         <label for="gravity">gravity</label>
         <output id="gravityo" class="u-pull-right" name="result">15</output class="u-pull-right">
+
+          
+        <input id="resistance" type="range" min="0" max="100" value="10" class="slider"
+          oninput="resistance = parseInt(this.value); document.getElementById('resistanceo').textContent=this.value">
+        <label for="resistance">resistance</label>
+        <output id="resistanceo" class="u-pull-right" name="result">10</output class="u-pull-right">
       </div>
     </div>
 
     <article class="row" style="margin-top:12rem;">
+      <h2>What can I do here?</h2>
+<p>
+ <b> Turn on the debug grid</b>, to see which cells are being checked for collisions. Cells with lots of checks are colored in <b>red</b>, less expensive cells are <b>green</b>. There's a percentage indicator in the top left corner, 
+  showing how many collisions have been saved compared to the brute force "check everything against everything" approach.
+</p>
       <h2>Implementation Details</h2>
       <p>
         The objects are assigned to the cells by rounding their positions to the next multiple of the cell size on x and y axis.
@@ -77,10 +85,12 @@
         <br>
         <br>
 
-        The specific hashing algorithm for creating the hash key from x and y is called a <a href="https://en.wikipedia.org/wiki/Pairing_function">pairing function</a>, 
+        The specific hashing function for creating the key from x and y coordinates is called a <a href="https://en.wikipedia.org/wiki/Pairing_function">pairing function</a>, 
         specifically Szudzik's pairing function.
         <code>a >= b ? a * a + a + b : a + b * b;</code>  where a, b >= 0 (positive coordinates)
-
+        This is a bijecive function, which can easily be reversed to get the original coordinates, e.g. when drawing the occupied debug grid cells.
+       
+      
       </p>
     </article>
   </div>

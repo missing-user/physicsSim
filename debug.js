@@ -4,12 +4,22 @@ function drawDebug() {
   drawGrid();
 }
 
-function debug() {
-  debugging = !debugging;
+function debug(loadFromStorage = false) {
+  if (!loadFromStorage) debugging = (debugging + 1) % 3;
   if (localStorage) localStorage.setItem("debug", debugging);
-  document.getElementById("debugBtn").textContent = debugging
-    ? "debug off"
-    : "debug on";
+
+  switch (debugging) {
+    default:
+    case 0:
+      document.getElementById("debugBtn").textContent = "debug off";
+      break;
+    case 1:
+      document.getElementById("debugBtn").textContent = "debug grid";
+      break;
+    case 2:
+      document.getElementById("debugBtn").textContent = "debug all";
+      break;
+  }
 }
 
 function resistanceToggle() {
@@ -35,9 +45,9 @@ function toggleOptimization() {
 function loadStorageValues() {
   if (localStorage) {
     //loads negative values and then toggles them
-    debugging = localStorage.getItem("debug") === "false";
+    debugging = parseInt(localStorage.getItem("debug"));
     linearFriction = localStorage.getItem("linearFriction") === "false";
-    debug();
+    debug(true);
     resistanceToggle();
   }
 }
@@ -48,9 +58,7 @@ function drawFPS() {
 }
 
 function drawColCount() {
-  const totalColCheck =
-    spatialHash.objects.length ** 2 +
-    statics.length * spatialHash.objects.length; //statics only need to be checked against dynamics, not agains each other
+  const totalColCheck = spatialHash.objects.length ** 2;
   ctx.fillText(
     colCount + " / " + totalColCheck + " collisions checked",
     10,
