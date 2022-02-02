@@ -6,10 +6,9 @@ class SpatialHash {
     this.sqrt2 = Math.sqrt(2);
   }
   getHash(x, y) {
-    return [
-      ~~(x / this.cellSize) * this.cellSize,
-      ~~(y / this.cellSize) * this.cellSize,
-    ].join(";");
+    const a = ~~(x / this.cellSize) * this.cellSize;
+    const b = ~~(y / this.cellSize) * this.cellSize;
+    return a >= b ? a * a + a + b : a + b * b;
   }
   add(obj) {
     if ("x" in obj && "y" in obj) {
@@ -30,20 +29,20 @@ class SpatialHash {
       var i = this.closestCell(obj.x);
       i <= this.closestCell(obj.x + obj.w);
       i += this.cellSize
-    )
+    ) {
       for (
         var j = this.closestCell(obj.y);
         j <= this.closestCell(obj.y + obj.h);
         j += this.cellSize
       ) {
-        let hash = [i, j].join(";");
-        console.log("added rectangle to cell: " + hash);
+        let hash = this.getHash(i, j);
 
         if (!(hash in this.cells)) {
           this.cells[hash] = [];
         }
         this.cells[hash].push(obj);
       }
+    }
   }
   addCirc(obj) {
     //radius + cellDiagonal squared
@@ -63,7 +62,7 @@ class SpatialHash {
         let cx = i + this.cellSize / 2 - obj.x;
         let cy = j + this.cellSize / 2 - obj.y;
         if (cx * cx + cy * cy < maxDiag) {
-          let hash = [i, j].join(";");
+          let hash = this.getHash(i, j);
           if (!(hash in this.cells)) {
             this.cells[hash] = [];
           }
@@ -95,7 +94,7 @@ class SpatialHash {
           j <= this.closestCell(obj.y + obj.h);
           j += this.cellSize
         ) {
-          let hash = [i, j].join(";");
+          let hash = this.getHash(i, j);
           this.cells[hash] = this.cells[hash].filter((item) => {
             return item != obj;
           });
@@ -135,7 +134,7 @@ class SpatialHash {
         let cx = i + this.cellSize / 2 - obj.x;
         let cy = j + this.cellSize / 2 - obj.y;
         if (cx * cx + cy * cy < maxDiag) {
-          let hash = [i, j].join(";");
+          let hash = this.getHash(i, j);
           if (hash in this.cells)
             returnBuffer = returnBuffer.concat(this.cells[hash]);
         }
@@ -154,7 +153,7 @@ class SpatialHash {
         j <= this.closestCell(obj.y + obj.h);
         j += this.cellSize
       ) {
-        let hash = [i, j].join(";");
+        let hash = this.getHash(i, j);
         if (hash in this.cells)
           returnBuffer = returnBuffer.concat(this.cells[hash]);
       }

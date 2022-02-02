@@ -31,8 +31,8 @@
     <hr>
     <div class="row">
       <div class="one-half column">
-        <button type="button" id="linearFrictionBtn" name="friction button" onclick="resistanceToggle()">linear
-          friction</button>
+        <button type="button" name="optimization button" onclick="toggleOptimization()">
+          Toggle optimization</button>
       </div>
       <div class="one-half column">
         <button type="button" id="debugBtn" name="debug button" onclick="debug()">debug on</button>
@@ -40,16 +40,16 @@
     </div>
     <div class="row">
       <div class="one-half column">
-        <input id="cellsize" type="range" min="20" max="100" value="25" class="slider"
+        <input id="cellsize" type="range" min="10" max="100" value="25" class="slider"
           oninput="document.getElementById('cellsizeo').textContent=this.value"
-          onchange="spatialHash.cellSize = this.value; 
+          onchange="spatialHash.cellSize = parseInt(this.value); 
           spatialHash.rebuild();">
         <label for="cellsize">cell size</label>
         <output id="cellsizeo" class="u-pull-right" name="result">25</output class="u-pull-right">
       </div>
       <div class="one-half column">
         <input id="springstrength" type="range" min="1" max="100" value="10" class="slider"
-          oninput="springstrength = this.value; document.getElementById('springstrengtho').textContent=this.value">
+          oninput="springstrength = parseInt(this.value); document.getElementById('springstrengtho').textContent=this.value">
         <label for="springstrength">spring strength</label>
         <output id="springstrengtho" class="u-pull-right" name="result">10</output class="u-pull-right">
       </div>
@@ -58,7 +58,7 @@
     <div class="row">
       <div class="one-half column">
         <input id="gravity" type="range" min="-100" max="100" value="15" class="slider"
-          oninput="gravity = this.value; document.getElementById('gravityo').textContent=this.value">
+          oninput="gravity = parseInt(this.value); document.getElementById('gravityo').textContent=this.value">
         <label for="gravity">gravity</label>
         <output id="gravityo" class="u-pull-right" name="result">15</output class="u-pull-right">
       </div>

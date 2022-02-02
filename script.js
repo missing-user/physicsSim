@@ -302,7 +302,7 @@ function initialize() {
   ctx.font = "20px sans-serif";
 
   //add the elements
-  for (var i = 0; i < 1; i++) {
+  for (var i = 0; i < 50; i++) {
     gen = {
       x: canvas.width * Math.random(),
       y: canvas.height * Math.random(),
@@ -320,7 +320,7 @@ function initialize() {
     };
     spatialHash.add(gen);
   }
-  for (var i = 0; i < 1; i++) {
+  for (var i = 0; i < 500; i++) {
     gen = {
       x: canvas.width * Math.random(),
       y: canvas.height * Math.random(),
@@ -337,7 +337,7 @@ function initialize() {
     };
     spatialHash.add(gen);
   }
-  for (var i = 0; i < 1; i++) {
+  for (var i = 0; i < 10; i++) {
     gen = {
       x: canvas.width * Math.random(),
       y: canvas.height * Math.random(),
@@ -354,7 +354,7 @@ function initialize() {
     };
     statics.push(gen);
   }
-  for (var i = 0; i < 2; i++) {
+  for (var i = 0; i < 20; i++) {
     gen = {
       x: canvas.width * Math.random(),
       y: canvas.height * Math.random(),
