@@ -12,7 +12,7 @@ var canvas = document.getElementById("canvas"),
   timefactor = 1,
   maincolor = "#333",
   gravity = 15,
-  springstrength = 10,
+  springstrength = 30,
   colCount = 0,
   mouse = { x: 0, y: 0 };
 var spatialHash = new SpatialHash(25);
@@ -129,7 +129,7 @@ function loop() {
 
   //if NaN has been calculated somewhere, print warning and discard the object
   if (0 in spatialHash.cells) {
-    const nanCounter = 0;
+    let nanCounter = 0;
     for (const entries of spatialHash.cells[0]) {
       if (
         isNaN(entries.x) ||
@@ -368,7 +368,7 @@ function initialize() {
     spatialHash.add(gen);
   }
   //rectangles
-  for (var i = 0; i < 50; i++) {
+  for (var i = 0; i < 100; i++) {
     gen = {
       x: canvas.width * Math.random(),
       y: canvas.height * Math.random(),
@@ -387,7 +387,7 @@ function initialize() {
     spatialHash.add(gen);
   }
   //points
-  for (var i = 0; i < 2000; i++) {
+  for (var i = 0; i < 200; i++) {
     gen = {
       x: canvas.width * Math.random(),
       y: canvas.height * Math.random(),
@@ -399,6 +399,9 @@ function initialize() {
     };
     spatialHash.add(gen);
   }
+
+  spatialHash.objects[0].r = 70;
+  spatialHash.objects[0].k = 50;
 
   loop();
 }
