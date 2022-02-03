@@ -63,15 +63,25 @@ function onmousemove(event) {
 }
 
 function eulerIntegrate(p) {
+  function limit(parameter, range = 3e5) {
+    return Math.min(range, Math.max(parameter, -range));
+  }
+  p.vx = limit(p.vx);
+  p.vy = limit(p.vy);
+  p.ax = limit(p.ax);
+  p.ay = limit(p.ay);
+
+  //euler integration step
   p.vx = p.vx + p.ax * dt;
   p.vy = p.vy + p.ay * dt;
 
   p.x = p.x + p.vx * dt;
   p.y = p.y + p.vy * dt;
 
-  p.vx = Math.min(1e8, Math.max(-1e8, p.vx));
-  p.vy = Math.min(1e8, Math.max(-1e8, p.vy));
+  collideWalls(p);
+}
 
+function collideWalls(p) {
   // handle boundaries
   if (p.x - (p.r ?? 0) < 0) {
     // west wall
@@ -100,14 +110,18 @@ function loop() {
   colCount = 0;
   dt = (performance.now() - lastLoopTime) / 1000;
   dt /= timefactor;
-  if (dt > 0.1) {
+  if (dt > 0.05) {
     console.log("frametimeSpike, limiting timestep", dt);
-    dt = 0.1;
+    dt = 0.05;
   }
   lastLoopTime = performance.now();
 
+  //set the mouse cursor
   spatialHash.objects[0].x = mouse.x;
   spatialHash.objects[0].y = mouse.y;
+
+  //spatialHash.objects[0].vx = 0;
+  //spatialHash.objects[0].vy = 0;
 
   for (const p of spatialHash.objects) {
     //physics
@@ -313,13 +327,18 @@ function softCollision(a, b, normal) {
 function friction(p) {
   //air resistance
   let v2 = p.vx * p.vx + p.vy * p.vy;
-  if (v2 > 0.02) {
+  if (v2 > 10) {
     let force = -0.002 * resistance * v2 * p.A;
-
     let normalized = [p.vx / Math.sqrt(v2), p.vy / Math.sqrt(v2)];
 
-    p.ax += (normalized[0] * force) / p.m;
-    p.ay += (normalized[1] * force) / p.m;
+    function limitResistance(input, velocity) {
+      // limit air resistance to a maximum of 99% of the velocity
+      if (velocity < 0) return Math.min(input, -velocity * 0.99);
+      else return Math.max(input, -velocity * 0.99);
+    }
+
+    p.ax += limitResistance((normalized[0] * force) / p.m, p.vx);
+    p.ay += limitResistance((normalized[1] * force) / p.m, p.vy);
   }
 }
 
@@ -340,7 +359,7 @@ function initialize() {
 
   //add the elements
   //circles
-  for (var i = 0; i < 350; i++) {
+  for (var i = 0; i < 250; i++) {
     gen = {
       x: random(width),
       y: random(height),
@@ -391,7 +410,7 @@ function initialize() {
   }
 
   spatialHash.objects[0].r = 70;
-  spatialHash.objects[0].k = 50;
+  spatialHash.objects[0].k = 5;
 
   loop();
 }
